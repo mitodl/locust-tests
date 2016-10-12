@@ -2,6 +2,7 @@
 locust file for micromasters
 This tests the veri first login to micromasters
 """
+import random
 from urlparse import urljoin, urlparse
 
 from locust import HttpLocust, TaskSet, task
@@ -11,19 +12,22 @@ import settings
 
 class UserLoginAndProfile(TaskSet):
 
-    username = "zoe"
+    username = None
     mm_csrftoken = None
 
     def on_start(self):
         """ on_start is called when a Locust start before any task is scheduled """
-        pass
+        self.username = random.choice(settings.USERNAMES_IN_EDX)
 
     def login(self):
         """
         Function to login an user on MicroMasters assuming she has an account on edX
         """
         # load the login form to get the token
-        login_form = self.client.get(urljoin(settings.EDXORG_BASE_URL, 'login'))
+        login_form = self.client.get(
+            urljoin(settings.EDXORG_BASE_URL, '/login'),
+            name='/login[edx login page]',
+        )
         cookies = login_form.cookies.get_dict()
         # login edx
         self.client.post(
@@ -34,9 +38,13 @@ class UserLoginAndProfile(TaskSet):
                 'remember': 'false'
             },
             headers={'X-CSRFToken': cookies.get('csrftoken')},
+            name='/user_api/v1/account/login_session/[edx login form]'
         )
         # login micromasters
-        self.client.get('/login/edxorg/')
+        self.client.get(
+            '/login/edxorg/',
+            name='/login/edxorg/[micromasters]'
+        )
         # get the csrftoken
         parsed_url = urlparse(settings.MICROMASTERS_BASE_URL)
         domain = parsed_url.netloc
@@ -49,9 +57,15 @@ class UserLoginAndProfile(TaskSet):
         Logout from edx and micromasters
         """
         # logout edX
-        self.client.get(urljoin(settings.EDXORG_BASE_URL, 'logout'))
+        self.client.get(
+            urljoin(settings.EDXORG_BASE_URL, '/logout'),
+            name='/logout[edx]'
+        )
         # logout micromasters
-        self.client.get('/logout')
+        self.client.get(
+            '/logout',
+            name='/logout[micromasters]'
+        )
 
     def index_no_login(self):
         """Load index page without being logged in"""
@@ -63,7 +77,10 @@ class UserLoginAndProfile(TaskSet):
         """
         # loading part
         self.client.get('/profile/')
-        resp_profile = self.client.get('/api/v0/profiles/{}/'.format(self.username))
+        resp_profile = self.client.get(
+            '/api/v0/profiles/{}/'.format(self.username),
+            name="'/api/v0/profiles/[username]/"
+        )
         profile = resp_profile.json()
         self.client.get('/api/v0/dashboard/')
         self.client.get('/api/v0/course_prices/')
@@ -100,6 +117,7 @@ class UserLoginAndProfile(TaskSet):
             '/api/v0/profiles/{}/'.format(self.username),
             json=profile,
             headers={'X-CSRFToken': self.mm_csrftoken},
+            name="'/api/v0/profiles/[username]/",
         )
         self.client.post(
             '/api/v0/enrolledprograms/',
@@ -127,6 +145,7 @@ class UserLoginAndProfile(TaskSet):
             '/api/v0/profiles/{}/'.format(self.username),
             json=profile,
             headers={'X-CSRFToken': self.mm_csrftoken},
+            name="'/api/v0/profiles/[username]/",
         )
         # add college
         profile['education'].append(
@@ -146,6 +165,7 @@ class UserLoginAndProfile(TaskSet):
             '/api/v0/profiles/{}/'.format(self.username),
             json=profile,
             headers={'X-CSRFToken': self.mm_csrftoken},
+            name="'/api/v0/profiles/[username]/",
         )
 
         # professional
@@ -166,6 +186,7 @@ class UserLoginAndProfile(TaskSet):
             '/api/v0/profiles/{}/'.format(self.username),
             json=profile,
             headers={'X-CSRFToken': self.mm_csrftoken},
+            name="'/api/v0/profiles/[username]/",
         )
 
         # I am done!
@@ -177,6 +198,7 @@ class UserLoginAndProfile(TaskSet):
                 '/api/v0/profiles/{}/'.format(self.username),
                 json=profile,
                 headers={'X-CSRFToken': self.mm_csrftoken},
+                name="'/api/v0/profiles/[username]/",
             )
 
     @task
