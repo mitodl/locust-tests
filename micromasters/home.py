@@ -8,9 +8,9 @@ from locust import HttpLocust, TaskSet, task
 import settings
 
 
-class UserNavigation(TaskSet):
+class UserLoginAndProfile(TaskSet):
 
-    username = "gio"
+    username = "zoe"
     mm_csrftoken = None
 
     def on_start(self):
@@ -48,20 +48,13 @@ class UserNavigation(TaskSet):
         # logout micromasters
         self.client.get('/logout')
 
-    @task
     def index_no_login(self):
         """Load index page without being logged in"""
         self.client.get("/")
 
-    @task
-    def perform_login(self):
-        """Load index page after being logged in"""
-        self.login()
-
-    @task
-    def profile_tab_personal(self):
+    def profile_tabs(self):
         """
-        Profile personal tab
+        Profile tabs
         """
         # loading part
         self.client.get('/profile/')
@@ -72,6 +65,8 @@ class UserNavigation(TaskSet):
         self.client.get('/api/v0/enrolledprograms/')
         # submission part
         profile.update({
+            'email_optin': False,
+            'filled_out': False,
             'agreed_to_terms_of_service': True,
             'birth_country': 'IT',
             'city': 'Los Angeles',
@@ -98,18 +93,87 @@ class UserNavigation(TaskSet):
         self.client.get('/api/v0/dashboard/')
         self.client.get('/api/v0/course_prices/')
 
-    @task
-    def finish(self):
-        """Just end the navigation"""
-        self.logout()
+        # education
+        # add the high school
+        profile['education'].append(
+            {
+                "degree_name": "hs",
+                "graduation_date": "1998-02-01",
+                "field_of_study": None,
+                "online_degree": False,
+                "school_name": "School User",
+                "school_city": "Lexington",
+                "school_state_or_territory": "US-MA",
+                "school_country": "US"
+            }
+        )
+        self.client.patch(
+            '/api/v0/profiles/{}/'.format(self.username),
+            json=profile,
+            headers={'X-CSRFToken': self.mm_csrftoken},
+        )
+        # add college
+        profile['education'].append(
+            {
+                "degree_name": "m",
+                "graduation_date": "2008-12-01",
+                "field_of_study": "14.0903",
+                "online_degree": False,
+                "school_name": "University of Here",
+                "school_city": "Bologna",
+                "school_state_or_territory": "IT-BO",
+                "school_country": "IT",
+                "graduation_date_edit": {"year": "2008", "month": "12"}
+            }
+        )
+        self.client.patch(
+            '/api/v0/profiles/{}/'.format(self.username),
+            json=profile,
+            headers={'X-CSRFToken': self.mm_csrftoken},
+        )
 
-    # @task(2)
-    # def dashboard(self):
-    #    self.client.get("/api/v0/dashboard/", headers=self.headers)
+        # professional
+        profile['work_history'].append(
+            {
+                "position": "Senior Software Engineer",
+                "industry": "Computer Software",
+                "company_name": "MIT",
+                "start_date": "2000-01-01",
+                "end_date": None,
+                "city": "Cambridge",
+                "country": "US",
+                "state_or_territory": "US-MA",
+                "start_date_edit": {"year": "2000", "month": "1"}
+            }
+        )
+        self.client.patch(
+            '/api/v0/profiles/{}/'.format(self.username),
+            json=profile,
+            headers={'X-CSRFToken': self.mm_csrftoken},
+        )
+
+        # I am done!
+        profile.update({
+            'email_optin': True,
+            'filled_out': True,
+        })
+
+    @task
+    def login_and_profile(self):
+        """
+        The actual task with the different operations in the right sequence to be run by locust
+        """
+        self.index_no_login()
+
+        self.login()
+
+        self.profile_tabs()
+
+        self.logout()
 
 
 class WebsiteUser(HttpLocust):
     host = settings.MICROMASTERS_BASE_URL
-    task_set = UserNavigation
-    min_wait = 5000
-    max_wait = 9000
+    task_set = UserLoginAndProfile
+    min_wait = 1000
+    max_wait = 3000
