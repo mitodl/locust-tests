@@ -46,13 +46,6 @@ coverage.xml
 .hypothesis/
 coverage/
 
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-celerybeat-schedule.db
 
 # Sphinx documentation
 docs/_build/
@@ -92,7 +85,5 @@ staticfiles/
 .venv
 release-notes-checklist
 
-static/scss/material.css
-
-# Local settings
-micromasters.yml
+# Local files
+usernames.txt

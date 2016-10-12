@@ -218,5 +218,5 @@ class UserLoginAndProfile(TaskSet):
 class WebsiteUser(HttpLocust):
     host = settings.MICROMASTERS_BASE_URL
     task_set = UserLoginAndProfile
-    min_wait = 1000
-    max_wait = 3000
+    min_wait = settings.LOCUST_TASK_MIN_WAIT
+    max_wait = settings.LOCUST_TASK_MAX_WAIT
