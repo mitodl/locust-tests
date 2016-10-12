@@ -1,5 +1,6 @@
 """
 locust file for micromasters
+This tests the veri first login to micromasters
 """
 from urlparse import urljoin, urlparse
 
@@ -27,7 +28,11 @@ class UserLoginAndProfile(TaskSet):
         # login edx
         self.client.post(
             urljoin(settings.EDXORG_BASE_URL, '/user_api/v1/account/login_session/'),
-            data={"email": "{}@example.com".format(self.username), "password": "test", 'remember': 'false'},
+            data={
+                "email": "{}@example.com".format(self.username),
+                "password": "test",
+                'remember': 'false'
+            },
             headers={'X-CSRFToken': cookies.get('csrftoken')},
         )
         # login micromasters
@@ -63,11 +68,21 @@ class UserLoginAndProfile(TaskSet):
         self.client.get('/api/v0/dashboard/')
         self.client.get('/api/v0/course_prices/')
         self.client.get('/api/v0/enrolledprograms/')
+
+        # reset the profile as much as possible for the next run
+        profile['education'] = []
+        profile['work_history'] = []
+        if profile['agreed_to_terms_of_service'] is True:
+            del profile['agreed_to_terms_of_service']
+        else:
+            profile['agreed_to_terms_of_service'] = True
+        filled_out = profile['filled_out']
+        del profile['filled_out']
+        del profile['email_optin']
+        del profile['image']
+
         # submission part
         profile.update({
-            'email_optin': False,
-            'filled_out': False,
-            'agreed_to_terms_of_service': True,
             'birth_country': 'IT',
             'city': 'Los Angeles',
             'country': 'US',
@@ -80,6 +95,7 @@ class UserLoginAndProfile(TaskSet):
             'preferred_name': '{} Preferred'.format(self.username),
             'state_or_territory': 'US-CA',
         })
+
         self.client.patch(
             '/api/v0/profiles/{}/'.format(self.username),
             json=profile,
@@ -153,10 +169,15 @@ class UserLoginAndProfile(TaskSet):
         )
 
         # I am done!
-        profile.update({
-            'email_optin': True,
-            'filled_out': True,
-        })
+        if not filled_out:
+            profile.update({
+                'filled_out': True,
+            })
+            self.client.patch(
+                '/api/v0/profiles/{}/'.format(self.username),
+                json=profile,
+                headers={'X-CSRFToken': self.mm_csrftoken},
+            )
 
     @task
     def login_and_profile(self):
