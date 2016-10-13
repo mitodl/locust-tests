@@ -117,13 +117,15 @@ class UserLoginAndProfile(TaskSet):
         self.client.patch(
             '/api/v0/profiles/{}/'.format(self.username),
             json=profile,
-            headers={'X-CSRFToken': self.mm_csrftoken},
+            headers={'Referer': urljoin(settings.MICROMASTERS_BASE_URL, '/'),
+                     'X-CSRFToken': self.mm_csrftoken},
             name="'/api/v0/profiles/[username]/",
         )
         self.client.post(
             '/api/v0/enrolledprograms/',
             json={'program_id': settings.MICROMASTERS_PROGRAM_ID},
-            headers={'X-CSRFToken': self.mm_csrftoken},
+            headers={'Referer': urljoin(settings.MICROMASTERS_BASE_URL, '/'),
+                     'X-CSRFToken': self.mm_csrftoken},
         )
         self.client.get('/api/v0/dashboard/')
         self.client.get('/api/v0/course_prices/')
@@ -145,7 +147,8 @@ class UserLoginAndProfile(TaskSet):
         self.client.patch(
             '/api/v0/profiles/{}/'.format(self.username),
             json=profile,
-            headers={'X-CSRFToken': self.mm_csrftoken},
+            headers={'Referer': urljoin(settings.MICROMASTERS_BASE_URL, '/'),
+                     'X-CSRFToken': self.mm_csrftoken},
             name="'/api/v0/profiles/[username]/",
         )
         # add college
@@ -165,7 +168,8 @@ class UserLoginAndProfile(TaskSet):
         self.client.patch(
             '/api/v0/profiles/{}/'.format(self.username),
             json=profile,
-            headers={'X-CSRFToken': self.mm_csrftoken},
+            headers={'Referer': urljoin(settings.MICROMASTERS_BASE_URL, '/'),
+                     'X-CSRFToken': self.mm_csrftoken},
             name="'/api/v0/profiles/[username]/",
         )
 
@@ -186,7 +190,8 @@ class UserLoginAndProfile(TaskSet):
         self.client.patch(
             '/api/v0/profiles/{}/'.format(self.username),
             json=profile,
-            headers={'X-CSRFToken': self.mm_csrftoken},
+            headers={'Referer': urljoin(settings.MICROMASTERS_BASE_URL, '/'),
+                     'X-CSRFToken': self.mm_csrftoken},
             name="'/api/v0/profiles/[username]/",
         )
 
@@ -198,7 +203,8 @@ class UserLoginAndProfile(TaskSet):
             self.client.patch(
                 '/api/v0/profiles/{}/'.format(self.username),
                 json=profile,
-                headers={'X-CSRFToken': self.mm_csrftoken},
+                headers={'Referer': urljoin(settings.MICROMASTERS_BASE_URL, '/'),
+                         'X-CSRFToken': self.mm_csrftoken},
                 name="'/api/v0/profiles/[username]/",
             )
 
