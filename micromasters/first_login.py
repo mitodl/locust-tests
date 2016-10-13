@@ -90,11 +90,11 @@ class UserLoginAndProfile(TaskSet):
         # reset the profile as much as possible for the next run
         profile['education'] = []
         profile['work_history'] = []
-        if profile['agreed_to_terms_of_service'] is True:
+        if profile.get('agreed_to_terms_of_service') is True:
             del profile['agreed_to_terms_of_service']
         else:
             profile['agreed_to_terms_of_service'] = True
-        filled_out = profile['filled_out']
+        filled_out = profile.get('filled_out')
         del profile['filled_out']
         del profile['email_optin']
         del profile['image']
