@@ -82,6 +82,8 @@ class UserLoginAndProfile(TaskSet):
             name="'/api/v0/profiles/[username]/"
         )
         profile = resp_profile.json()
+        if not profile:
+            raise Exception('You are not doing it right!')
         self.client.get('/api/v0/dashboard/')
         self.client.get('/api/v0/course_prices/')
         self.client.get('/api/v0/enrolledprograms/')
@@ -89,14 +91,18 @@ class UserLoginAndProfile(TaskSet):
         # reset the profile as much as possible for the next run
         profile['education'] = []
         profile['work_history'] = []
-        if profile['agreed_to_terms_of_service'] is True:
+        if profile.get('agreed_to_terms_of_service') is True:
             del profile['agreed_to_terms_of_service']
         else:
             profile['agreed_to_terms_of_service'] = True
-        filled_out = profile['filled_out']
-        del profile['filled_out']
-        del profile['email_optin']
-        del profile['image']
+        filled_out = None
+        if profile.get('filled_out') is not None:
+            filled_out = profile['filled_out']
+            del profile['filled_out']
+        if profile.get('email_optin') is not None:
+            del profile['email_optin']
+        if profile.get('image') is not None:
+            del profile['image']
 
         # submission part
         profile.update({
