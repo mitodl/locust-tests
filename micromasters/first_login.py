@@ -37,7 +37,8 @@ class UserLoginAndProfile(TaskSet):
                 "password": "test",
                 'remember': 'false'
             },
-            headers={'X-CSRFToken': cookies.get('csrftoken')},
+            headers={'Referer': urljoin(settings.EDXORG_BASE_URL, '/login'),
+                     'X-CSRFToken': cookies.get('csrftoken')},
             name='/user_api/v1/account/login_session/[edx login form]'
         )
         # login micromasters
