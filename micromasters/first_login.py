@@ -95,9 +95,12 @@ class UserLoginAndProfile(TaskSet):
         else:
             profile['agreed_to_terms_of_service'] = True
         filled_out = profile.get('filled_out')
-        del profile['filled_out']
-        del profile['email_optin']
-        del profile['image']
+        if 'filled_out' in profile:
+            del profile['filled_out']
+        if 'email_optin' in profile:
+            del profile['email_optin']
+        if 'image' in profile:
+            del profile['image']
 
         # submission part
         profile.update({
