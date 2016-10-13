@@ -201,6 +201,24 @@ class UserLoginAndProfile(TaskSet):
                 name="'/api/v0/profiles/[username]/",
             )
 
+    def dashboard_reload(self):
+        """
+        Loads dashboard page and 10 times the backends
+        """
+        # load the page
+        self.client.get('/dashboard/')
+        self.client.get(
+            '/api/v0/profiles/{}/'.format(self.username),
+            name="'/api/v0/profiles/[username]/"
+        )
+        self.client.get('/api/v0/dashboard/')
+        self.client.get('/api/v0/course_prices/')
+        self.client.get('/api/v0/enrolledprograms/')
+        # reload 10 times the dashboard api to simulate refresh waiting for enrollment
+        # enrollment not tested
+        for _ in range(10):
+            self.client.get('/api/v0/dashboard/')
+
     @task
     def login_and_profile(self):
         """
@@ -211,6 +229,8 @@ class UserLoginAndProfile(TaskSet):
         self.login()
 
         self.profile_tabs()
+
+        self.dashboard_reload()
 
         self.logout()
 
