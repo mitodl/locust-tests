@@ -14,10 +14,15 @@ class UserLoginAndProfile(TaskSet):
 
     username = None
     mm_csrftoken = None
+    usernames = settings.USERNAMES_IN_EDX[:]
 
     def on_start(self):
         """ on_start is called when a Locust start before any task is scheduled """
-        self.username = random.choice(settings.USERNAMES_IN_EDX)
+        if self.usernames:
+            self.username = random.choice(self.usernames)
+            self.usernames.remove(self.username)
+        else:
+            raise Exception('No More Users')
 
     def login(self):
         """
@@ -94,7 +99,7 @@ class UserLoginAndProfile(TaskSet):
             del profile['agreed_to_terms_of_service']
         else:
             profile['agreed_to_terms_of_service'] = True
-        filled_out = profile.get('filled_out')
+        filled_out = profile['filled_out']
         if 'filled_out' in profile:
             del profile['filled_out']
         if 'email_optin' in profile:
