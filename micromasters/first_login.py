@@ -99,7 +99,7 @@ class UserLoginAndProfile(TaskSet):
             del profile['agreed_to_terms_of_service']
         else:
             profile['agreed_to_terms_of_service'] = True
-        filled_out = profile['filled_out']
+        filled_out = profile.get('filled_out')
         if 'filled_out' in profile:
             del profile['filled_out']
         if 'email_optin' in profile:
