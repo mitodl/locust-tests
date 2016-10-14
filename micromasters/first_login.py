@@ -18,11 +18,7 @@ class UserLoginAndProfile(TaskSet):
 
     def on_start(self):
         """ on_start is called when a Locust start before any task is scheduled """
-        if self.usernames:
-            self.username = random.choice(self.usernames)
-            self.usernames.remove(self.username)
-        else:
-            raise Exception('No More Users')
+        self.username = random.choice(self.usernames)
 
     def login(self):
         """
