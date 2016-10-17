@@ -14,11 +14,10 @@ class UserLoginAndProfile(TaskSet):
 
     username = None
     mm_csrftoken = None
-    usernames = settings.USERNAMES_IN_EDX[:]
 
     def on_start(self):
         """ on_start is called when a Locust start before any task is scheduled """
-        self.username = random.choice(self.usernames)
+        self.username = random.choice(settings.USERNAMES_IN_EDX)
 
     def login(self):
         """
