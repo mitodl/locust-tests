@@ -47,7 +47,7 @@ class UserDashboardRefresh(TaskSet):
 
 class UserTab1(TaskSet):
     """First Tab of the user profile"""
-    tasks = [UserDashboardRefresh]
+    tasks = {UserDashboardRefresh: 10}
     profile_filled_out = False
 
     def on_start(self):
@@ -210,7 +210,7 @@ class UserLogIn(TaskSet):
     """
     Section for login
     """
-    tasks = {UserTab1: 3}
+    tasks = {UserTab1: 10}
 
     def on_start(self):
         """on_start is called before any task is scheduled """
@@ -222,7 +222,7 @@ class UserLogIn(TaskSet):
         """Return to the parent task"""
         self.interrupt()
 
-    @task
+    @task(5)
     def login(self):
         """
         Function to login an user on MicroMasters assuming she has an account on edX
@@ -277,7 +277,7 @@ class UserLogIn(TaskSet):
 
 class UserBehavior(TaskSet):
 
-    tasks = [UserLogIn]
+    tasks = {UserLogIn: 10}
     username = None
     mm_csrftoken = None
 
@@ -285,7 +285,7 @@ class UserBehavior(TaskSet):
         """on_start is called before any task is scheduled """
         self.username = random.choice(settings.USERNAMES_IN_EDX)
 
-    @task
+    @task(2)
     def index_no_login(self):
         """Load index page without being logged in"""
         self.client.get("/")
