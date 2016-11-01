@@ -1,6 +1,6 @@
 """
 locust file for micromasters
-This tests the veri first login to micromasters
+This tests the very first login to micromasters
 """
 import random
 from urlparse import urljoin, urlparse
