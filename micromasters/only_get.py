@@ -37,7 +37,7 @@ class UserDashboardRefresh(TaskSet):
         )
         self.client.get('/api/v0/dashboard/')
         self.client.get('/api/v0/course_prices/')
-        self.client.get('/api/v0/enrolledprograms/')
+        self.client.get('/api/v0/programs/')
 
 
 class LearnerProfile(TaskSet):
@@ -62,14 +62,15 @@ class LearnerProfile(TaskSet):
         if not self.mm_csrftoken:
             self.interrupt()
         # load the page
-        self.client.get('/learner/{}'.format(self.username))
+        self.client.get('/learner/{}'.format(self.username),
+                        name='/learner/[username]')
         self.client.get(
             '/api/v0/profiles/{}/'.format(self.username),
             name="'/api/v0/profiles/[username]/"
         )
         self.client.get('/api/v0/course_prices/')
         self.client.get('/api/v0/dashboard/')
-        self.client.get('/api/v0/enrolledprograms/')
+        self.client.get('/api/v0/programs/')
 
 
 class UserLogIn(TaskSet):

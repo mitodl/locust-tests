@@ -38,7 +38,7 @@ class UserDashboardRefresh(TaskSet):
         )
         self.client.get('/api/v0/dashboard/')
         self.client.get('/api/v0/course_prices/')
-        self.client.get('/api/v0/enrolledprograms/')
+        self.client.get('/api/v0/programs/')
         # reload 10 times the dashboard api to simulate refresh waiting for enrollment
         # enrollment not tested
         for _ in range(10):
@@ -77,7 +77,7 @@ class UserTab1(TaskSet):
         profile = resp_profile.json()
         self.client.get('/api/v0/dashboard/')
         self.client.get('/api/v0/course_prices/')
-        self.client.get('/api/v0/enrolledprograms/')
+        self.client.get('/api/v0/programs/')
 
         # reset the profile as much as possible for the next run
         profile['education'] = []
