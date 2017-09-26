@@ -1,2 +1,3 @@
 ipython
 locustio
+open-discussions-client

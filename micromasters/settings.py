@@ -8,6 +8,7 @@ def get_var(name, default=None):
     """Return the settings in a the environment"""
     return os.environ.get(name, default)
 
+
 # locust settings
 LOCUST_TASK_MIN_WAIT = int(get_var('LOCUST_TASK_MIN_WAIT', 1000))
 LOCUST_TASK_MAX_WAIT = int(get_var('LOCUST_TASK_MAX_WAIT', 3000))
