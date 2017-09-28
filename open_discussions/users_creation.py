@@ -10,39 +10,12 @@ import random
 from faker import Faker
 from locust import HttpLocust, TaskSet, task
 from open_discussions_api.client import OpenDiscussionsApi
-from open_discussions_api.users.client import UsersApi, SUPPORTED_USER_ATTRIBUTES, quote
+from open_discussions_api.users.client import UsersApi
 
 import settings
-
+from utils import patch_get_session, patched_user_update
 
 fake = Faker()
-
-
-def patch_get_session(client):
-    """
-    Monkey patch the get session of OpenDiscussionApi to use the locust client
-    """
-    def patched_func(self):
-        return client
-    return patched_func
-
-
-def patched_user_update(self, username, **profile):
-    """
-    Monkey patch the user update
-    """
-    if not profile:
-        raise AttributeError("No fields provided to update")
-
-    for key in profile:
-        if key not in SUPPORTED_USER_ATTRIBUTES:
-            raise AttributeError("Argument {} is not supported".format(key))
-
-    return self.session.patch(
-        self.get_url("/users/{}/".format(quote(username))),
-        json=dict(profile=profile),
-        name="/users/[username]/",
-    )
 
 
 class UserCreation(TaskSet):
