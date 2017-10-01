@@ -14,12 +14,75 @@ from open_discussions_api.channels.client import ChannelsApi
 import settings
 import utils
 
+
 fake = Faker()
+
+
+class Channel(TaskSet):
+
+    tasks = {}
+
+    def on_start(self):
+        """on_start is called before any task is scheduled """
+        self.moderators = self.parent.moderators
+        self.contributors = self.parent.contributors
+        self.channel = self.parent.channel
+        self.posts = []
+
+    def get_client_for(self, username):
+        """
+        Creates an autenticated client
+        """
+        api = OpenDiscussionsApi(
+            settings.OPEN_DISCUSSIONS_JWT_SECRET,
+            settings.OPEN_DISCUSSIONS_BASE_URL,
+            username,
+        )
+        return api._get_authenticated_session()
+
+    @task
+    def stop(self):
+        """Return to the parent task"""
+        self.interrupt()
+
+    @task(5)
+    def load_frontpage(self):
+        """Hits the frontpage api"""
+        try:
+            username = random.choice(list(self.contributors))
+        except IndexError:
+            # this means that this started before creating contributors
+            self.interrupt()
+        client = self.get_client_for(username)
+        client.get('/api/v0/frontpage/')
+
+    @task(3)
+    def create_post(self):
+        """
+        creates a post for an user
+        """
+        try:
+            username = random.choice(list(self.contributors))
+        except IndexError:
+            # this means that this started before creating contributors
+            self.interrupt()
+        client = self.get_client_for(username)
+        res = client.post(
+            '/api/v0/channels/{}/posts/'.format(self.channel),
+            json={
+                'title': ' '.join(fake.paragraph().split(' ')[:2]),
+                'text': fake.paragraph(),
+                'upvoted': False,
+            },
+            name='api/v0/channels/[channel_name]/posts/'
+        )
+
+        self.posts.append(res.json()['id'])
 
 
 class UsersChannel(TaskSet):
 
-    tasks = {}
+    tasks = {Channel: 20}
 
     def on_start(self):
         """on_start is called before any task is scheduled """
@@ -60,9 +123,10 @@ class UsersChannel(TaskSet):
     @task(6)
     def remove_contributor(self):
         """Adds a contributor to the channel"""
-        if not self.contributors:
+        try:
+            username = random.choice(list(self.contributors))
+        except Exception:
             return
-        username = random.choice(list(self.contributors))
         self.api.channels.remove_subscriber(self.channel, username)
         self.api.channels.remove_contributor(self.channel, username)
         self.contributors.remove(username)

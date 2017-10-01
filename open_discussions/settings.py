@@ -16,3 +16,7 @@ LOCUST_TASK_MAX_WAIT = int(get_var('LOCUST_TASK_MAX_WAIT', 3000))
 OPEN_DISCUSSIONS_JWT_SECRET = get_var('OPEN_DISCUSSIONS_JWT_SECRET', 'terribly_unsafe_default_jwt_secret_key')
 OPEN_DISCUSSIONS_BASE_URL = get_var('OPEN_DISCUSSIONS_BASE_URL', 'http://mit-open.mit.local:8063')
 OPEN_DISCUSSIONS_API_USERNAME = get_var('OPEN_DISCUSSIONS_API_USERNAME', 'mitodl')
+
+# base settings to start a base django app
+SECRET_KEY = 'fake'
+

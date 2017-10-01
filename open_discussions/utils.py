@@ -1,7 +1,6 @@
 """
 Utility functions
 """
-
 from open_discussions_api.users.client import SUPPORTED_USER_ATTRIBUTES, quote
 
 
