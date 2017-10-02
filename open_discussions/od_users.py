@@ -18,17 +18,18 @@ import utils
 fake = Faker()
 
 
-class Channel(TaskSet):
+class UsersChannel(TaskSet):
 
     tasks = {}
 
     def on_start(self):
         """on_start is called before any task is scheduled """
-        self.moderators = self.parent.moderators
-        self.contributors = self.parent.contributors
-        self.channel = self.parent.channel
+        self.moderators = set()
+        self.contributors = set()
         self.posts = []
         self.comments = []
+        self.channel = random.choice(self.parent.discussion_channels)
+        self.api = self.parent.api
 
     def get_client_for(self, username):
         """
@@ -40,158 +41,6 @@ class Channel(TaskSet):
             username,
         )
         return api._get_authenticated_session()
-
-    @task
-    def stop(self):
-        """Return to the parent task"""
-        self.interrupt()
-
-    @task(10)
-    def load_frontpage(self):
-        """Hits the frontpage api"""
-        try:
-            username = random.choice(list(self.contributors))
-        except IndexError:
-            # this means that this started before creating contributors
-            self.interrupt()
-        client = self.get_client_for(username)
-        client.get('/api/v0/frontpage/')
-
-    @task(10)
-    def load_channel_posts(self):
-        """Hits the channel posts api"""
-        try:
-            username = random.choice(list(self.contributors))
-        except IndexError:
-            # this means that this started before creating contributors
-            self.interrupt()
-        client = self.get_client_for(username)
-        client.get(
-            '/api/v0/channels/{}/posts/'.format(self.channel),
-            name='/api/v0/channels/[channel_name]/posts/',
-        )
-
-    @task(10)
-    def load_post_comments(self):
-        """Loads the post comments"""
-        try:
-            username = random.choice(list(self.contributors))
-            post_id = random.choice(self.posts)
-        except IndexError:
-            # this means that this started before creating contributors or posts
-            self.interrupt()
-        client = self.get_client_for(username)
-        client.get(
-            '/api/v0/posts/{}/comments/'.format(post_id),
-            name='/api/v0/posts/[post_id]/comments/',
-        )
-
-    @task(3)
-    def create_post(self):
-        """
-        creates a post for an user
-        """
-        try:
-            username = random.choice(list(self.contributors))
-        except IndexError:
-            # this means that this started before creating contributors
-            self.interrupt()
-        client = self.get_client_for(username)
-        res = client.post(
-            '/api/v0/channels/{}/posts/'.format(self.channel),
-            json={
-                'title': ' '.join(fake.paragraph().split(' ')[:2]),
-                'text': fake.paragraph(),
-                'upvoted': False,
-            },
-            name='/api/v0/channels/[channel_name]/posts/'
-        )
-        self.posts.append(res.json()['id'])
-
-    @task(5)
-    def create_comment(self):
-        """
-        Creates a comment for a post
-        """
-        try:
-            username = random.choice(list(self.contributors))
-            post_id = random.choice(self.posts)
-        except IndexError:
-            # this means that this started before creating contributors or posts
-            self.interrupt()
-        client = self.get_client_for(username)
-        res = client.post(
-            '/api/v0/posts/{}/comments/'.format(post_id),
-            json={"text": fake.paragraph()},
-            name='/api/v0/posts/[post_id]/comments/'
-        )
-        self.comments.append(res.json()['id'])
-
-    @task(10)
-    def upvote_post(self):
-        """
-        Upvotes a post
-        """
-        try:
-            username = random.choice(list(self.contributors))
-            post_id = random.choice(self.posts)
-        except IndexError:
-            # this means that this started before creating contributors or posts
-            self.interrupt()
-        client = self.get_client_for(username)
-        client.patch(
-            '/api/v0/posts/{}/'.format(post_id),
-            json={"upvoted": True},
-            name='/api/v0/posts/[post_id]/'
-        )
-
-    @task(10)
-    def upvote_comment(self):
-        """
-        Upvotes a comment
-        """
-        try:
-            username = random.choice(list(self.contributors))
-            comment_id = random.choice(self.comments)
-        except IndexError:
-            # this means that this started before creating contributors or posts
-            self.interrupt()
-        client = self.get_client_for(username)
-        client.patch(
-            '/api/v0/comments/{}/'.format(comment_id),
-            json={"upvoted": True},
-            name='/api/v0/comments/[comment_id]/'
-        )
-
-    @task(10)
-    def downvote_comment(self):
-        """
-        Downvotes a comment
-        """
-        try:
-            username = random.choice(list(self.contributors))
-            comment_id = random.choice(self.comments)
-        except IndexError:
-            # this means that this started before creating contributors or posts
-            self.interrupt()
-        client = self.get_client_for(username)
-        client.patch(
-            '/api/v0/comments/{}/'.format(comment_id),
-            json={"downvoted": True},
-            name='/api/v0/comments/[comment_id]/'
-        )
-
-
-class UsersChannel(TaskSet):
-
-    tasks = {Channel: 30}
-
-    def on_start(self):
-        """on_start is called before any task is scheduled """
-        self.moderators = set()
-        self.contributors = set()
-        self.channel = random.choice(self.parent.discussion_channels)
-        self.api = self.parent.api
 
     @task
     def stop(self):
@@ -224,6 +73,141 @@ class UsersChannel(TaskSet):
         self.api.channels.remove_subscriber(self.channel, username)
         self.api.channels.remove_contributor(self.channel, username)
         self.contributors.remove(username)
+
+    @task(20)
+    def load_frontpage(self):
+        """Hits the frontpage api"""
+        try:
+            username = random.choice(list(self.contributors))
+        except IndexError:
+            # this means that this started before creating contributors
+            return
+        client = self.get_client_for(username)
+        client.get('/api/v0/frontpage/')
+
+    @task(20)
+    def load_channel_posts(self):
+        """Hits the channel posts api"""
+        try:
+            username = random.choice(list(self.contributors))
+        except IndexError:
+            # this means that this started before creating contributors
+            return
+        client = self.get_client_for(username)
+        client.get(
+            '/api/v0/channels/{}/posts/'.format(self.channel),
+            name='/api/v0/channels/[channel_name]/posts/',
+        )
+
+    @task(20)
+    def load_post_comments(self):
+        """Loads the post comments"""
+        try:
+            username = random.choice(list(self.contributors))
+            post_id = random.choice(self.posts)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            return
+        client = self.get_client_for(username)
+        client.get(
+            '/api/v0/posts/{}/comments/'.format(post_id),
+            name='/api/v0/posts/[post_id]/comments/',
+        )
+
+    @task(6)
+    def create_post(self):
+        """
+        creates a post for an user
+        """
+        try:
+            username = random.choice(list(self.contributors))
+        except IndexError:
+            # this means that this started before creating contributors
+            return
+        client = self.get_client_for(username)
+        res = client.post(
+            '/api/v0/channels/{}/posts/'.format(self.channel),
+            json={
+                'title': ' '.join(fake.paragraph().split(' ')[:2]),
+                'text': fake.paragraph(),
+                'upvoted': False,
+            },
+            name='/api/v0/channels/[channel_name]/posts/'
+        )
+        self.posts.append(res.json()['id'])
+
+    @task(10)
+    def create_comment(self):
+        """
+        Creates a comment for a post
+        """
+        try:
+            username = random.choice(list(self.contributors))
+            post_id = random.choice(self.posts)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            return
+        client = self.get_client_for(username)
+        res = client.post(
+            '/api/v0/posts/{}/comments/'.format(post_id),
+            json={"text": fake.paragraph()},
+            name='/api/v0/posts/[post_id]/comments/'
+        )
+        self.comments.append(res.json()['id'])
+
+    @task(20)
+    def upvote_post(self):
+        """
+        Upvotes a post
+        """
+        try:
+            username = random.choice(list(self.contributors))
+            post_id = random.choice(self.posts)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            return
+        client = self.get_client_for(username)
+        client.patch(
+            '/api/v0/posts/{}/'.format(post_id),
+            json={"upvoted": True},
+            name='/api/v0/posts/[post_id]/'
+        )
+
+    @task(20)
+    def upvote_comment(self):
+        """
+        Upvotes a comment
+        """
+        try:
+            username = random.choice(list(self.contributors))
+            comment_id = random.choice(self.comments)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            return
+        client = self.get_client_for(username)
+        client.patch(
+            '/api/v0/comments/{}/'.format(comment_id),
+            json={"upvoted": True},
+            name='/api/v0/comments/[comment_id]/'
+        )
+
+    @task(20)
+    def downvote_comment(self):
+        """
+        Downvotes a comment
+        """
+        try:
+            username = random.choice(list(self.contributors))
+            comment_id = random.choice(self.comments)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            return
+        client = self.get_client_for(username)
+        client.patch(
+            '/api/v0/comments/{}/'.format(comment_id),
+            json={"downvoted": True},
+            name='/api/v0/comments/[comment_id]/'
+        )
 
 
 class UserBehavior(TaskSet):
