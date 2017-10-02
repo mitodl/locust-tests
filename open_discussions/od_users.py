@@ -71,7 +71,22 @@ class Channel(TaskSet):
             name='/api/v0/channels/[channel_name]/posts/',
         )
 
-    @task(5)
+    @task(10)
+    def load_post_comments(self):
+        """Loads the post comments"""
+        try:
+            username = random.choice(list(self.contributors))
+            post_id = random.choice(self.posts)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            self.interrupt()
+        client = self.get_client_for(username)
+        client.get(
+            '/api/v0/posts/{}/comments/'.format(post_id),
+            name='/api/v0/posts/[post_id]/comments/',
+        )
+
+    @task(3)
     def create_post(self):
         """
         creates a post for an user
@@ -169,7 +184,7 @@ class Channel(TaskSet):
 
 class UsersChannel(TaskSet):
 
-    tasks = {Channel: 20}
+    tasks = {Channel: 30}
 
     def on_start(self):
         """on_start is called before any task is scheduled """
@@ -188,16 +203,8 @@ class UsersChannel(TaskSet):
         """Adds a moderator to the channel"""
         username = random.choice(self.parent.discussion_usernames)
         self.api.channels.add_moderator(self.channel, username)
+        self.api.channels.add_subscriber(self.channel, username)
         self.moderators.add(username)
-
-    @task
-    def removes_moderator(self):
-        """Removes a moderator from the channel"""
-        if not self.moderators:
-            return
-        username = random.choice(list(self.moderators))
-        self.api.channels.remove_moderator(self.channel, username)
-        self.moderators.remove(username)
 
     @task(10)
     def add_contributor(self):
@@ -207,7 +214,7 @@ class UsersChannel(TaskSet):
         self.api.channels.add_subscriber(self.channel, username)
         self.contributors.add(username)
 
-    @task(3)
+    @task(6)
     def remove_contributor(self):
         """Adds a contributor to the channel"""
         try:
@@ -299,7 +306,7 @@ class UserBehavior(TaskSet):
             image_medium=None
         )
 
-    @task
+    @task(10)
     def index(self):
         """Load index page"""
         self.client.get("/")
