@@ -28,6 +28,7 @@ class Channel(TaskSet):
         self.contributors = self.parent.contributors
         self.channel = self.parent.channel
         self.posts = []
+        self.comments = []
 
     def get_client_for(self, username):
         """
@@ -45,7 +46,7 @@ class Channel(TaskSet):
         """Return to the parent task"""
         self.interrupt()
 
-    @task(5)
+    @task(10)
     def load_frontpage(self):
         """Hits the frontpage api"""
         try:
@@ -56,7 +57,21 @@ class Channel(TaskSet):
         client = self.get_client_for(username)
         client.get('/api/v0/frontpage/')
 
-    @task(3)
+    @task(10)
+    def load_channel_posts(self):
+        """Hits the channel posts api"""
+        try:
+            username = random.choice(list(self.contributors))
+        except IndexError:
+            # this means that this started before creating contributors
+            self.interrupt()
+        client = self.get_client_for(username)
+        client.get(
+            '/api/v0/channels/{}/posts/'.format(self.channel),
+            name='/api/v0/channels/[channel_name]/posts/',
+        )
+
+    @task(5)
     def create_post(self):
         """
         creates a post for an user
@@ -74,10 +89,82 @@ class Channel(TaskSet):
                 'text': fake.paragraph(),
                 'upvoted': False,
             },
-            name='api/v0/channels/[channel_name]/posts/'
+            name='/api/v0/channels/[channel_name]/posts/'
+        )
+        self.posts.append(res.json()['id'])
+
+    @task(5)
+    def create_comment(self):
+        """
+        Creates a comment for a post
+        """
+        try:
+            username = random.choice(list(self.contributors))
+            post_id = random.choice(self.posts)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            self.interrupt()
+        client = self.get_client_for(username)
+        res = client.post(
+            '/api/v0/posts/{}/comments/'.format(post_id),
+            json={"text": fake.paragraph()},
+            name='/api/v0/posts/[post_id]/comments/'
+        )
+        self.comments.append(res.json()['id'])
+
+    @task(10)
+    def upvote_post(self):
+        """
+        Upvotes a post
+        """
+        try:
+            username = random.choice(list(self.contributors))
+            post_id = random.choice(self.posts)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            self.interrupt()
+        client = self.get_client_for(username)
+        client.patch(
+            '/api/v0/posts/{}/'.format(post_id),
+            json={"upvoted": True},
+            name='/api/v0/posts/[post_id]/'
         )
 
-        self.posts.append(res.json()['id'])
+    @task(10)
+    def upvote_comment(self):
+        """
+        Upvotes a comment
+        """
+        try:
+            username = random.choice(list(self.contributors))
+            comment_id = random.choice(self.comments)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            self.interrupt()
+        client = self.get_client_for(username)
+        client.patch(
+            '/api/v0/comments/{}/'.format(comment_id),
+            json={"upvoted": True},
+            name='/api/v0/comments/[comment_id]/'
+        )
+
+    @task(10)
+    def downvote_comment(self):
+        """
+        Downvotes a comment
+        """
+        try:
+            username = random.choice(list(self.contributors))
+            comment_id = random.choice(self.comments)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            self.interrupt()
+        client = self.get_client_for(username)
+        client.patch(
+            '/api/v0/comments/{}/'.format(comment_id),
+            json={"downvoted": True},
+            name='/api/v0/comments/[comment_id]/'
+        )
 
 
 class UsersChannel(TaskSet):
@@ -120,7 +207,7 @@ class UsersChannel(TaskSet):
         self.api.channels.add_subscriber(self.channel, username)
         self.contributors.add(username)
 
-    @task(6)
+    @task(3)
     def remove_contributor(self):
         """Adds a contributor to the channel"""
         try:
@@ -162,7 +249,7 @@ class UserBehavior(TaskSet):
         )
 
         # create a some users to play with
-        for _ in range(20):
+        for _ in range(10):
             self.create_user()
         # create a couple of channels
         for _ in range(2):

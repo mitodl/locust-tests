@@ -27,7 +27,7 @@ def patched_user_update(self, username, **profile):
     return self.session.patch(
         self.get_url("/users/{}/".format(quote(username))),
         json=dict(profile=profile),
-        name="/users/[username]/",
+        name="/api/v0/users/[username]/",
     )
 
 
@@ -41,7 +41,7 @@ def patched_add_contributor(self, channel_name, username):
             channel_name=quote(channel_name),
         )),
         json={"contributor_name": username},
-        name="/channels/[channel_name]/contributors/"
+        name="/api/v0/channels/[channel_name]/contributors/"
     )
 
 
@@ -55,7 +55,7 @@ def patched_remove_contributor(self, channel_name, username):
             channel_name=quote(channel_name),
             username=quote(username),
         )),
-        name="/channels/[channel_name]/contributors/[username]/"
+        name="/api/v0/channels/[channel_name]/contributors/[username]/"
     )
 
 
@@ -68,7 +68,7 @@ def patched_add_moderator(self, channel_name, username):
             channel_name=quote(channel_name)
         )),
         json={"moderator_name": username},
-        name="/channels/[channel_name]/moderators/"
+        name="/api/v0/channels/[channel_name]/moderators/"
     )
 
 
@@ -81,7 +81,7 @@ def patched_remove_moderator(self, channel_name, username):
             channel_name=quote(channel_name),
             username=quote(username),
         )),
-        name="/channels/[channel_name]/moderators/[username]/"
+        name="/api/v0/channels/[channel_name]/moderators/[username]/"
     )
 
 
@@ -94,7 +94,7 @@ def patched_add_subscriber(self, channel_name, username):
             channel_name=quote(channel_name),
         )),
         json={"subscriber_name": username},
-        name="/channels/[channel_name]/subscribers/"
+        name="/api/v0/channels/[channel_name]/subscribers/"
     )
 
 
@@ -107,5 +107,5 @@ def patched_remove_subscriber(self, channel_name, username):
             channel_name=quote(channel_name),
             username=quote(username),
         )),
-        name="/channels/[channel_name]/subscribers/[username]/"
+        name="/api/v0/channels/[channel_name]/subscribers/[username]/"
     )
