@@ -240,10 +240,10 @@ class UserBehavior(TaskSet):
         )
 
         # create a some users to play with
-        for _ in range(10):
+        for _ in range(2):
             self.create_user()
         # create a couple of channels
-        for _ in range(2):
+        for _ in range(1):
             self.create_channel()
 
     def create_user(self):
