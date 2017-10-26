@@ -86,6 +86,17 @@ class UsersChannel(TaskSet):
         client.get('/api/v0/frontpage/')
 
     @task(20)
+    def load_channels(self):
+        """Hits the channel api"""
+        try:
+            username = random.choice(list(self.contributors))
+        except IndexError:
+            # this means that this started before creating contributors
+            return
+        client = self.get_client_for(username)
+        client.get('/api/v0/channels/')
+
+    @task(20)
     def load_channel_posts(self):
         """Hits the channel posts api"""
         try:
