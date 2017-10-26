@@ -2,3 +2,4 @@ faker
 ipython
 locustio
 open-discussions-client
+praw==4.5.1
