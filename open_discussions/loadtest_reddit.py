@@ -326,7 +326,7 @@ class UserBehavior(TaskSet):
         """Create a channel"""
         api = make_api_client(settings.OPEN_DISCUSSIONS_API_USERNAME)
 
-        name = '_'.join(fake.paragraph().split(' ')[:2]).lower()
+        name = "channel_{}".format(uuid.uuid4().hex)[:20]
 
         api.create_channel(
             title=' '.join(fake.paragraph().split(' ')[:2]),
