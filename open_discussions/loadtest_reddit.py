@@ -233,7 +233,7 @@ class UsersChannel(TaskSet):
 
         with channel_api.request_name("/api/info?id=[comment_id]&raw_json=1"):
             # Force HTTP get request
-            _ = comment.title
+            _ = comment.text
 
     @task(20)
     def downvote_comment(self):
@@ -262,7 +262,7 @@ class UsersChannel(TaskSet):
 
         with channel_api.request_name("/api/info?id=[comment_id]&raw_json=1"):
             # Force HTTP get request
-            _ = comment.title
+            _ = comment.text
 
     @task(5)
     def clear_vote_comment(self):
@@ -289,7 +289,7 @@ class UsersChannel(TaskSet):
 
         with channel_api.request_name("/api/info?id=[comment_id]&raw_json=1"):
             # Force HTTP get request
-            _ = comment.title
+            _ = comment.text
 
 
 class UserBehavior(TaskSet):
