@@ -2,6 +2,7 @@
 Locust tests for PRAW
 """
 import random
+import uuid
 
 from faker import Faker
 from locust import HttpLocust, TaskSet, task
@@ -317,13 +318,13 @@ class UserBehavior(TaskSet):
         if len(self.discussion_usernames) >= self.discussion_usernames_number:
             return
 
-        username = fake.name()
+        username = uuid.uuid4().hex
         channel_api.get_or_create_user(username)
         self.discussion_usernames.append(username)
 
     def create_channel(self):
         """Create a channel"""
-        api = make_api_client()
+        api = make_api_client(settings.OPEN_DISCUSSIONS_API_USERNAME)
 
         name = '_'.join(fake.paragraph().split(' ')[:2]).lower()
 
