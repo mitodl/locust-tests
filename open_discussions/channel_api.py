@@ -48,13 +48,7 @@ LOCUST_SESSION = None
 @contextmanager
 def request_name(name):
     old_request = LOCUST_SESSION.request
-
-    def altered_request(method, *args, **kwargs):
-        kwargs.pop('name')
-        method = method.upper()
-        return old_request(method, *args, **kwargs, name=name)
-
-    LOCUST_SESSION.request = altered_request
+    LOCUST_SESSION.request = partial(old_request, name=name)
     yield
     LOCUST_SESSION.request = old_request
 
