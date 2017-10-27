@@ -3,7 +3,7 @@
 from urllib.parse import urljoin
 
 from contextlib import contextmanager
-from functools import partialmethod
+from functools import partial
 import requests
 import praw
 from praw.models.reddit import more
@@ -48,7 +48,7 @@ LOCUST_SESSION = None
 @contextmanager
 def request_name(name):
     old_request = LOCUST_SESSION.request
-    LOCUST_SESSION.request = partialmethod(old_request, name=name)
+    LOCUST_SESSION.request = partial(old_request, name=name)
     yield
     LOCUST_SESSION.request = old_request
 
