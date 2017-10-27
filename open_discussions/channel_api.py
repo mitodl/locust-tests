@@ -1,9 +1,9 @@
 """Channels APIs copied from open-discussions/channels/api.py, edited to fit"""
 # pylint: disable=too-many-public-methods
+from threading import local
 from urllib.parse import urljoin
 
 from contextlib import contextmanager
-from functools import partial
 import requests
 import praw
 from praw.models.reddit import more
@@ -42,21 +42,34 @@ class FakeUser:
 
 
 # replace this with the given session
+COUNTER = 0
+LOCAL = local()
 LOCUST_SESSION = None
+
+
+def patch_locust_request():
+    old_request = LOCUST_SESSION.request
+
+    def altered_request(method, url, name=None, **kwargs):
+        global LOCAL
+        method = method.upper()
+
+        try:
+            print("Set name to {}".format(name))
+            name = LOCAL.patched_name
+        except AttributeError:
+            print("No name, using {}".format(name))
+            pass
+        return old_request(method, url, name=name, **kwargs)
+
+    LOCUST_SESSION.request = altered_request
 
 
 @contextmanager
 def request_name(name):
-    old_request = LOCUST_SESSION.request
-
-    def altered_request(method, *args, **kwargs):
-        kwargs.pop('name')
-        method = method.upper()
-        return old_request(method, *args, **kwargs, name=name)
-
-    LOCUST_SESSION.request = altered_request
+    LOCAL.patched_name = name
     yield
-    LOCUST_SESSION.request = old_request
+    LOCAL.patched_name = None
 
 
 def get_or_create_user(username):
@@ -76,7 +89,8 @@ def get_or_create_user(username):
     refresh_token_url = urljoin(settings.OPEN_DISCUSSIONS_REDDIT_URL, '/api/v1/generate_refresh_token')
 
     session = _get_session()
-    resp = session.get(refresh_token_url, params={'username': username}, name='/api/v1/generate_refresh_token').json()
+    with request_name("/api/v1/generate_refresh_token"):
+        resp = session.get(refresh_token_url, params={'username': username}, name='/api/v1/generate_refresh_token').json()
     return resp['refresh_token']
 
 
@@ -409,7 +423,8 @@ class Api:
         Returns:
             praw.models.CommentForest: the base of the comment tree
         """
-        return self.get_post(post_id).comments
+        with request_name("/comments/[post_id]/?limit=2048&sort=best&raw_json=1"):
+            return self.get_post(post_id).comments
 
     def more_comments(self, comment_fullname, parent_fullname, count, children=None):
         """

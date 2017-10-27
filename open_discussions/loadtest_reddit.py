@@ -304,6 +304,7 @@ class UserBehavior(TaskSet):
         self.discussion_channels = []
 
         channel_api.LOCUST_SESSION = self.client
+        channel_api.patch_locust_request()
 
         # create a some users to play with
         for _ in range(2):
