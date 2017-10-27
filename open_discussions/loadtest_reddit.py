@@ -334,8 +334,9 @@ class UserBehavior(TaskSet):
             public_description=fake.paragraph(),
             channel_type='private',
         )
-        # access title to force an HTTP request
-        _ = api.get_channel(name).title
+        with channel_api.request_name("/r/[channel_name]/about/?raw_json=1"):
+            # access title to force an HTTP request
+            _ = api.get_channel(name).title
         self.discussion_channels.append(name)
 
     @task
