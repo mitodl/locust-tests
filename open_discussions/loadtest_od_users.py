@@ -184,6 +184,24 @@ class UsersChannel(TaskSet):
             name='/api/v0/posts/[post_id]/'
         )
 
+    @task(5)
+    def clear_vote_post(self):
+        """
+        Clear vote for a post
+        """
+        try:
+            username = random.choice(list(self.contributors))
+            post_id = random.choice(self.posts)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            return
+        client = self.get_client_for(username)
+        client.patch(
+            '/api/v0/posts/{}/'.format(post_id),
+            json={"upvoted": False},
+            name='/api/v0/posts/[post_id]/'
+        )
+
     @task(20)
     def upvote_comment(self):
         """
@@ -217,6 +235,24 @@ class UsersChannel(TaskSet):
         client.patch(
             '/api/v0/comments/{}/'.format(comment_id),
             json={"downvoted": True},
+            name='/api/v0/comments/[comment_id]/'
+        )
+
+    @task(5)
+    def clear_vote_comment(self):
+        try:
+            username = random.choice(list(self.contributors))
+            comment_id = random.choice(self.comments)
+        except IndexError:
+            # this means that this started before creating contributors or posts
+            return
+        client = self.get_client_for(username)
+        client.patch(
+            '/api/v0/comments/{}/'.format(comment_id),
+            json={
+                "upvoted": False,
+                "downvoted": False,
+            },
             name='/api/v0/comments/[comment_id]/'
         )
 
