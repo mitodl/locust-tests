@@ -65,10 +65,11 @@ class UsersChannel(TaskSet):
 
     @task(6)
     def remove_contributor(self):
-        """Adds a contributor to the channel"""
+        """Removes a contributor from the channel"""
         try:
             username = random.choice(list(self.contributors))
-        except Exception:
+        except IndexError:
+            # no contributors
             return
         self.api.channels.remove_subscriber(self.channel, username)
         self.api.channels.remove_contributor(self.channel, username)

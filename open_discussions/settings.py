@@ -1,12 +1,15 @@
 """
-Settings for the micromasters app
+Settings for the open_discussions locust tests
 """
 import os
 
 
 def get_var(name, default=None):
     """Return the settings in a the environment"""
-    return os.environ.get(name, default)
+    value = os.environ.get(name, default)
+    if value is None:
+        raise Exception("Missing value for {}".format(name))
+    return value
 
 
 # locust settings
@@ -24,6 +27,14 @@ CHANNELS_TO_CREATE = int(get_var('OPEN_DISCUSSIONS_CHANNELS_TO_CREATE', 4))
 POSTS_PER_CHANNEL = int(get_var('OPEN_DISCUSSIONS_POSTS_PER_CHANNEL', 10))
 COMMENTS_PER_POST = int(get_var('OPEN_DISCUSSIONS_POSTS_PER_CHANNEL', 20))
 
+OPEN_DISCUSSIONS_REDDIT_CLIENT_ID = get_var('OPEN_DISCUSSIONS_REDDIT_CLIENT_ID')
+OPEN_DISCUSSIONS_REDDIT_SECRET = get_var('OPEN_DISCUSSIONS_REDDIT_SECRET')
+OPEN_DISCUSSIONS_REDDIT_ACCESS_TOKEN = get_var('OPEN_DISCUSSIONS_REDDIT_ACCESS_TOKEN')
+OPEN_DISCUSSIONS_REDDIT_URL = get_var('OPEN_DISCUSSIONS_REDDIT_URL')
+
+OPEN_DISCUSSIONS_CHANNEL_POST_LIMIT = int(get_var('OPEN_DISCUSSIONS_CHANNEL_POST_LIMIT', 25))
+
 
 # base settings to start a base django app
 SECRET_KEY = 'fake'
+VERSION = '9.9.99'
