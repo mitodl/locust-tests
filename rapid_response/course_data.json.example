@@ -1,0 +1,18 @@
+Copy this file to course_data.json in the same directory.
+Replace the contents with a JSON representation of all courses, blocks, and answers that
+you want the load test to submit against.
+
+Example course data JSON:
+
+[
+  {
+    "course_id": "course-v1:MIT+gsidebo000+2017_Summer",
+    "blocks": [
+      {
+        "id": "block-v1:MIT+gsidebo000+2017_Summer+type@problem+block@90b4d9682dfb4276b7be32f4d86092bd",
+        "choicegroup_id": "90b4d9682dfb4276b7be32f4d86092bd_2_1",
+        "answer_ids": ["choice_0", "choice_1", "choice_2", "choice_3"]
+      }
+    ]
+  }
+]
