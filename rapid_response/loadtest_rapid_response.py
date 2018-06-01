@@ -74,13 +74,13 @@ class UserLogIn(TaskSet):
     def _login(self):
         # load the login form to get the token
         initial_login_resp = self.client.get(
-            'login',
+            '/login',
             name='Initial login request'
         )
         csrf_token = initial_login_resp.cookies.get('csrftoken')
         # login edx
         self.client.post(
-            'user_api/v1/account/login_session/',
+            '/user_api/v1/account/login_session/',
             data={
                 'email': '{}@example.com'.format(self.username),
                 'password': self.pw,
@@ -99,7 +99,7 @@ class UserLogIn(TaskSet):
         # user requests to enroll again.
         for enrollment_action in ['unenroll', 'enroll']:
             self.client.post(
-                'change_enrollment',
+                '/change_enrollment',
                 data={
                     'course_id': course_id,
                     'enrollment_action': enrollment_action
