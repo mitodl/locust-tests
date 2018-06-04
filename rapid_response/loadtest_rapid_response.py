@@ -95,19 +95,33 @@ class UserLogIn(TaskSet):
 
     def _enroll(self):
         course_id = self.course_data['course_id']
-        # Unenrolling before enrolling because edX throws an error when an enrolled
-        # user requests to enroll again.
-        for enrollment_action in ['unenroll', 'enroll']:
+
+        enrollment_status_resp = self.client.get(
+            '/api/enrollment/v1/enrollment/{},{}'.format(self.username, course_id),
+            data={
+                'email': '{}@example.com'.format(self.username),
+                'password': self.pw,
+            },
+            headers={
+                'X-CSRFToken': self.client.cookies.get('csrftoken'),
+                'HTTP_X_EDX_API_KEY': settings.EDX_API_KEY,
+            },
+            allow_redirects=True,
+            name='Check Enrollment',
+        )
+        if not enrollment_status_resp.ok:
+            raise Exception('Request for enrollment status failed: {}'.format(enrollment_status_resp.content))
+        if not enrollment_status_resp.content or not enrollment_status_resp.json()['is_active']:
             self.client.post(
                 '/change_enrollment',
                 data={
                     'course_id': course_id,
-                    'enrollment_action': enrollment_action
+                    'enrollment_action': 'enroll'
                 },
                 headers={
                     'X-CSRFToken': self.client.cookies.get('csrftoken')
                 },
-                name='Course Enrollment ({})'.format(enrollment_action),
+                name='Enroll in Course',
             )
         self.enrolled_users.add(self.username)
 
