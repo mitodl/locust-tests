@@ -15,6 +15,7 @@ LOCUST_TASK_MAX_WAIT = int(get_var('LOCUST_TASK_MAX_WAIT', 3000))
 
 LMS_BASE_URL = get_var('LMS_BASE_URL', 'http://localhost:18000')
 EDX_API_KEY = get_var('EDX_API_KEY', None)
+EDX_TEST_USER_PW = 'edx'
 
 usernames_in_edx_env = get_var('USERNAMES_IN_EDX')
 USERNAMES_IN_EDX = []

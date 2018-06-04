@@ -7,7 +7,7 @@ import settings
 
 
 def client_is_logged_into_edx(client):
-    return client.cookies.get('edxloggedin') == 'true'
+    return client.cookies.get('edxloggedin') == 'true' and client.cookies.get('csrftoken')
 
 
 class ProblemSubmission(TaskSet):
@@ -83,7 +83,7 @@ class UserLogIn(TaskSet):
             '/user_api/v1/account/login_session/',
             data={
                 'email': '{}@example.com'.format(self.username),
-                'password': self.pw,
+                'password': settings.EDX_TEST_USER_PW,
                 'remember': 'false'
             },
             headers={
@@ -100,7 +100,7 @@ class UserLogIn(TaskSet):
             '/api/enrollment/v1/enrollment/{},{}'.format(self.username, course_id),
             data={
                 'email': '{}@example.com'.format(self.username),
-                'password': self.pw,
+                'password': settings.EDX_TEST_USER_PW,
             },
             headers={
                 'X-CSRFToken': self.client.cookies.get('csrftoken'),
