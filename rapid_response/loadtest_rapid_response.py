@@ -68,7 +68,7 @@ class UserLogIn(TaskSet):
     def on_start(self):
         """on_start is called before any task is scheduled """
         self.enrolled_users = self.parent.enrolled_users
-        self.username = random.choice(settings.USERNAMES_IN_EDX)
+        self.username = random.choice(list(settings.USERNAMES_IN_EDX.difference(self.enrolled_users)))
         self.course_data = random.choice(settings.RAPID_RESPONSE_COURSE_DATA)
 
     def _login(self):
@@ -95,7 +95,6 @@ class UserLogIn(TaskSet):
 
     def _enroll(self):
         course_id = self.course_data['course_id']
-
         enrollment_status_resp = self.client.get(
             '/api/enrollment/v1/enrollment/{},{}'.format(self.username, course_id),
             data={
@@ -110,7 +109,7 @@ class UserLogIn(TaskSet):
             name='Check Enrollment',
         )
         if not enrollment_status_resp.ok:
-            raise Exception('Request for enrollment status failed: {}'.format(enrollment_status_resp.content))
+            self.interrupt()
         if not enrollment_status_resp.content or not enrollment_status_resp.json()['is_active']:
             self.client.post(
                 '/change_enrollment',

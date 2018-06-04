@@ -18,15 +18,15 @@ EDX_API_KEY = get_var('EDX_API_KEY', None)
 EDX_TEST_USER_PW = 'edx'
 
 usernames_in_edx_env = get_var('USERNAMES_IN_EDX')
-USERNAMES_IN_EDX = []
+USERNAMES_IN_EDX = set()
 # first try to load usernames from environment
 if usernames_in_edx_env:
-    USERNAMES_IN_EDX = [username.strip() for username in usernames_in_edx_env.split(',')]
+    USERNAMES_IN_EDX = set([username.strip() for username in usernames_in_edx_env.split(',')])
 # otherwise load from file
 else:
     with open(os.path.join(os.path.dirname(__file__), 'usernames.txt')) as user_file:
         for username in user_file:
-            USERNAMES_IN_EDX.append(username.strip())
+            USERNAMES_IN_EDX.add(username.strip())
 
 course_data_env = get_var('RAPID_RESPONSE_COURSE_DATA')
 RAPID_RESPONSE_COURSE_DATA = []
