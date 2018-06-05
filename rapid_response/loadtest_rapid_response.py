@@ -20,13 +20,6 @@ class ProblemSubmission(TaskSet):
         self.course_data = self.parent.course_data
 
     @staticmethod
-    def _get_answer_post_url(course_id, block_id):
-        return '/courses/{}/xblock/{}/handler/xmodule_handler/problem_check'.format(
-            course_id,
-            block_id
-        )
-
-    @staticmethod
     def _answer_post_dict(choicegroup_id, answer_id):
         return {'input_{}'.format(choicegroup_id): answer_id}
 
@@ -43,7 +36,7 @@ class ProblemSubmission(TaskSet):
         choicegroup_id = block['choicegroup_id']
         answer_id = random.choice(block['answer_ids'])
         self.client.post(
-            self._get_answer_post_url(course_id, block_id),
+            '/courses/%s/xblock/%s/handler/xmodule_handler/problem_check' % (course_id, block_id),
             data=self._answer_post_dict(choicegroup_id, answer_id),
             headers={
                 'X-CSRFToken': self.client.cookies.get('csrftoken')
@@ -51,15 +44,15 @@ class ProblemSubmission(TaskSet):
             name='Problem Submission',
         )
 
-    @task
-    def stop(self):
-        self.interrupt()
+    # @task
+    # def stop(self):
+    #     self.interrupt()
 
 
 class UserLogin(TaskSet):
     """
     """
-    tasks = {ProblemSubmission: 5}
+    tasks = [ProblemSubmission]
     username = None
     course_data = None
 
@@ -67,6 +60,8 @@ class UserLogin(TaskSet):
         """on_start is called before any task is scheduled """
         self.username = random.choice(settings.USERNAMES_IN_EDX)
         self.course_data = random.choice(settings.RAPID_RESPONSE_COURSE_DATA)
+        if not client_is_logged_into_edx(self.client):
+            self._login()
 
     def _login(self):
         # load the login form to get the token
@@ -89,17 +84,6 @@ class UserLogin(TaskSet):
             },
             name='Actual login'
         )
-
-    @task
-    def login_and_enroll(self):
-        """
-        """
-        if not client_is_logged_into_edx(self.client):
-            self._login()
-
-    @task
-    def stop(self):
-        self.interrupt()
 
 
 class UserBehavior(TaskSet):
