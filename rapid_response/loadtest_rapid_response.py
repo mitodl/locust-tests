@@ -42,7 +42,7 @@ class ProblemSubmission(TaskSet):
         block_id = block['id']
         choicegroup_id = block['choicegroup_id']
         answer_id = random.choice(block['answer_ids'])
-        resp = self.client.post(
+        self.client.post(
             self._get_answer_post_url(course_id, block_id),
             data=self._answer_post_dict(choicegroup_id, answer_id),
             headers={
@@ -50,10 +50,6 @@ class ProblemSubmission(TaskSet):
             },
             name='Problem Submission',
         )
-        if not resp.ok:
-            print('Problem check failed:')
-            print(resp)
-            print(resp.content)
 
     @task
     def stop(self):
