@@ -56,19 +56,16 @@ class ProblemSubmission(TaskSet):
         self.interrupt()
 
 
-class UserLogIn(TaskSet):
+class UserLogin(TaskSet):
     """
     """
     tasks = {ProblemSubmission: 5}
-    enrolled_users = None
     username = None
     course_data = None
-    pw = 'edx'
 
     def on_start(self):
         """on_start is called before any task is scheduled """
-        self.enrolled_users = self.parent.enrolled_users
-        self.username = random.choice(list(settings.USERNAMES_IN_EDX.difference(self.enrolled_users)))
+        self.username = random.choice(settings.USERNAMES_IN_EDX)
         self.course_data = random.choice(settings.RAPID_RESPONSE_COURSE_DATA)
 
     def _login(self):
@@ -82,7 +79,7 @@ class UserLogIn(TaskSet):
         self.client.post(
             '/user_api/v1/account/login_session/',
             data={
-                'email': '{}@example.com'.format(self.username),
+                'email': settings.EDX_USER_EMAIL_TEMPLATE.format(self.username),
                 'password': settings.EDX_TEST_USER_PW,
                 'remember': 'false'
             },
@@ -93,45 +90,12 @@ class UserLogIn(TaskSet):
             name='Actual login'
         )
 
-    def _enroll(self):
-        course_id = self.course_data['course_id']
-        enrollment_status_resp = self.client.get(
-            '/api/enrollment/v1/enrollment/{},{}'.format(self.username, course_id),
-            data={
-                'email': '{}@example.com'.format(self.username),
-                'password': settings.EDX_TEST_USER_PW,
-            },
-            headers={
-                'X-CSRFToken': self.client.cookies.get('csrftoken'),
-                'HTTP_X_EDX_API_KEY': settings.EDX_API_KEY,
-            },
-            allow_redirects=True,
-            name='Check Enrollment',
-        )
-        if not enrollment_status_resp.ok:
-            self.interrupt()
-        if not enrollment_status_resp.content or not enrollment_status_resp.json()['is_active']:
-            self.client.post(
-                '/change_enrollment',
-                data={
-                    'course_id': course_id,
-                    'enrollment_action': 'enroll'
-                },
-                headers={
-                    'X-CSRFToken': self.client.cookies.get('csrftoken')
-                },
-                name='Enroll in Course',
-            )
-        self.enrolled_users.add(self.username)
-
     @task
     def login_and_enroll(self):
         """
         """
         if not client_is_logged_into_edx(self.client):
             self._login()
-        if not self.username in self.enrolled_users:
-            self._enroll()
 
     @task
     def stop(self):
@@ -139,8 +103,7 @@ class UserLogIn(TaskSet):
 
 
 class UserBehavior(TaskSet):
-    tasks = [UserLogIn]
-    enrolled_users = set()
+    tasks = [UserLogin]
 
 
 class WebsiteUser(HttpLocust):
