@@ -7,8 +7,8 @@ import uuid
 from faker import Faker
 from locust import HttpLocust, TaskSet, task
 
-import settings
-import channel_api
+import .settings
+import .channel_api
 
 
 fake = Faker()
