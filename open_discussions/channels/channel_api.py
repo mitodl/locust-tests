@@ -13,7 +13,7 @@ from prawcore.exceptions import (
     NotFound as PrawNotFound,
 )
 
-import settings
+import .settings
 
 CHANNEL_TYPE_PUBLIC = 'public'
 CHANNEL_TYPE_PRIVATE = 'private'

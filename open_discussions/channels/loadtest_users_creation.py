@@ -12,8 +12,8 @@ from locust import HttpLocust, TaskSet, task
 from open_discussions_api.client import OpenDiscussionsApi
 from open_discussions_api.users.client import UsersApi
 
-import settings
-from utils import patch_get_session, patched_user_update
+import .settings
+from .utils import patch_get_session, patched_user_update
 
 fake = Faker()
 

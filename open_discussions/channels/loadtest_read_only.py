@@ -13,8 +13,8 @@ from open_discussions_api.client import OpenDiscussionsApi
 from open_discussions_api.users.client import UsersApi
 from open_discussions_api.channels.client import ChannelsApi
 
-import settings
-import utils
+import .settings
+import .utils
 
 fake = Faker()
 
