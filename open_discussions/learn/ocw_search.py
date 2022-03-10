@@ -1,21 +1,17 @@
 """Tests for discussions learn search"""
 import random
+import requests 
 
 from locust import HttpUser, TaskSet, task, between
 
 from open_discussions.util.es import generate_learn_query, ResourceType, OfferedByType, QueryParams, PriceType
 
-TEXTS = [
-    "",  # no text, search all items
-    "\"Quantum Mechanics\"",
-    "\"Machine Learning\"",
-    "Albedo",
-    "Kinetic"
-]
-
 LIMIT = 6
 SEARCH_URL = "/api/v0/search/"
 
+word_list_url = 'https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt'
+r = requests.get(word_list_url)
+word_list = r.text.splitlines()
 
 class SearchPage(TaskSet):
     """
@@ -60,27 +56,16 @@ class SearchPage(TaskSet):
     def new_search(self):
         """Start a new search"""
         self.page = 0
-        # NOTE: sometimes the permutation generated here will return zero results
-        #       because the facet combinations don't make sense
-        #       that's a bit too complicated to codify so we don't worry about it for now
+        search_term_count = random.choice(range(1,5))
+        search_term_choices = random.choices(word_list, k=search_term_count)
         self.params = QueryParams(
-            # text search
-            random.choice(TEXTS),
-            # learning resource types 1..n
+           ' '.join(search_term_choices),
             random.sample(
                 list(ResourceType),
                 random.randint(1, len(ResourceType))
             ),
-            # offered by 0..n
-            random.sample(
-                list(OfferedByType),
-                random.randint(0, len(OfferedByType))
-            ),
-            # price 0..1
-            random.sample(
-                list(PriceType),
-                random.randint(0, 1)
-            )
+            [OfferedByType.OCW],
+            [PriceType.FREE],
         )
         self._execute_search()
 
