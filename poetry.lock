@@ -348,7 +348,7 @@ python-versions = "*"
 
 [[package]]
 name = "praw"
-version = "4.5.1"
+version = "4.6.0"
 description = "PRAW, an acronym for `Python Reddit API Wrapper`, is a python package that allows for simple access to reddit's API."
 category = "main"
 optional = false
@@ -584,7 +584,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=4.6)", "pytest-black (
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "2f941089c3f68f5334380ca80adb28f09efd5302960b3978dbb4efa6502cf0cf"
+content-hash = "422d2674d6ebc630c67695d1aa5ba96d30ee730f4ffe7b483ea53cac2b924dfc"
 
 [metadata.files]
 appnope = [
@@ -906,8 +906,8 @@ pickleshare = [
     {file = "pickleshare-0.7.5.tar.gz", hash = "sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca"},
 ]
 praw = [
-    {file = "praw-4.5.1-py2.py3-none-any.whl", hash = "sha256:84ff4aa0fb4d3882992188186e3f0defc8dfbff264cb547f94f01b1283e10a6c"},
-    {file = "praw-4.5.1.tar.gz", hash = "sha256:0ea58c79f4454af02f1b592f79267744333104d420efd0da18ff31aad715d29f"},
+    {file = "praw-4.6.0-py2.py3-none-any.whl", hash = "sha256:da448ca455f1362edb83b4929869e87f99725f7decb729e59e9b5b8ffef570c0"},
+    {file = "praw-4.6.0.tar.gz", hash = "sha256:3f1cb9405291e0f875cc6d75e1705e1c1a55c13fcf8deeca229a93e9dfc6a1b1"},
 ]
 prawcore = [
     {file = "prawcore-0.10.1-py2.py3-none-any.whl", hash = "sha256:eacf1b2e10da4883759bd795235b7c7d35e56db18c10a174e52ae65b60359f53"},
